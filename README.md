@@ -50,6 +50,52 @@ python src/cli.py validate --mongodb-uri="mongodb://localhost:27017" --sql-uri="
 python src/cli.py schema --mongodb-uri="mongodb://localhost:27017" --collection="users" --output="schema.json"
 ```
 
+## Usage Examples
+
+### Basic Commands
+
+1. **Validate connections and schema**:
+   ```bash
+   etl validate --collection my_collection --table my_table
+   ```
+
+2. **Analyze schema**:
+   ```bash
+   etl schema --collection my_collection --output schema.json
+   ```
+
+3. **Migrate data**:
+   ```bash
+   etl migrate --collection my_collection --table my_table --batch-size 1000
+   ```
+
+### Chain Commands
+
+Execute multiple commands in sequence:
+
+1. **Basic chain**:
+   ```bash
+   etl chain validate migrate --collection my_collection --table my_table
+   ```
+
+2. **Full chain with all options**:
+   ```bash
+   etl chain schema validate migrate \
+       --collection my_collection \
+       --table my_table \
+       --mongodb-uri mongodb://localhost:27017 \
+       --sql-uri postgresql://user:password@localhost:5432/db \
+       --batch-size 1000 \
+       --dry-run \
+       --output schema.json
+   ```
+
+Available commands for chaining:
+- `validate`: Check connections and schema compatibility
+- `schema`: Analyze MongoDB collection schema
+- `migrate`: Transfer data from MongoDB to SQL
+
+
 ### Environment Variables
 
 You can set the following environment variables to avoid typing them in the command line:
