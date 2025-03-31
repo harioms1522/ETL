@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import subprocess
 import sys
+from utils.env_setup import setup_environment, load_environment
 
 # Initialize typer app and rich console
 app = typer.Typer(help="MongoDB to SQL Migration Tool")
@@ -13,6 +14,35 @@ console = Console()
 
 # Load environment variables
 load_dotenv()
+
+@app.command()
+def setup(
+    force: bool = typer.Option(
+        False,
+        help="Force setup even if .env file exists",
+    ),
+):
+    """
+    Interactive setup for environment variables.
+    """
+    try:
+        if os.path.exists(".env") and not force:
+            if not typer.confirm("Environment file (.env) already exists. Do you want to overwrite it?"):
+                console.print("[yellow]Setup cancelled.")
+                return
+        
+        env_vars = setup_environment()
+        
+        # Set environment variables for current session
+        for key, value in env_vars.items():
+            os.environ[key] = value
+        
+        console.print("\n[green]Environment setup completed successfully!")
+        console.print("You can now run other commands using these settings.")
+        
+    except Exception as e:
+        console.print(f"[red]Error during environment setup: {str(e)}")
+        raise typer.Exit(1)
 
 @app.command()
 def migrate(

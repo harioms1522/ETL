@@ -103,6 +103,25 @@ You can set the following environment variables to avoid typing them in the comm
 - `MONGODB_URI`: MongoDB connection URI
 - `SQL_URI`: SQL database connection URI
 
+### Environment Setup
+Before using the tool, you need to set up your environment variables:
+
+1. **Interactive Setup**:
+   ```bash
+   etl setup
+   ```
+   This will guide you through setting up:
+   - MongoDB connection URI
+   - SQL database connection URI
+   - Default batch size
+
+2. **Force Setup** (overwrite existing settings):
+   ```bash
+   etl setup --force
+   ```
+
+The settings will be saved to a `.env` file and loaded automatically for subsequent commands.
+
 ### Command Options
 
 #### migrate
