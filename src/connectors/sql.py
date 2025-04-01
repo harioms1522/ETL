@@ -88,6 +88,19 @@ class SQLConnector:
         
         return stats
 
+    def table_exists(self, table_name: str) -> bool:
+        """Check if table exists."""
+        if not self.inspector:
+            raise ConnectionError("SQL connection not established")
+        return self.inspector.has_table(table_name)
+
+    def is_table_compatible(self, table_name: str, collection_schema: Dict[str, Any]) -> bool:
+        """Check if table is compatible with collection schema."""
+        table_schema = self.get_table_schema(table_name)
+        # check if table schema is a subset of collection schema
+        return all(col in collection_schema for col in table_schema)
+        # return table_schema == collection_schema
+
     def validate_connection(self) -> bool:
         """Validate SQL connection."""
         try:
@@ -133,6 +146,20 @@ class SQLConnector:
             return True
         except SQLAlchemyError as e:
             console.print(f"[red]Failed to create table: {str(e)}")
+            return False
+
+    def insert_data(self, table_name: str, data: List[Dict[str, Any]]) -> bool:
+        """Insert data into table."""
+        if not self.engine:
+            raise ConnectionError("SQL connection not established")
+
+        try:
+            with self.engine.connect() as conn:
+                conn.execute(text(f"INSERT INTO {table_name} ({', '.join(data[0].keys())}) VALUES ({', '.join([f':{key}' for key in data[0].keys()])})"))
+                conn.commit()
+            return True
+        except SQLAlchemyError as e:
+            console.print(f"[red]Failed to insert data: {str(e)}")
             return False
 
     def __enter__(self):

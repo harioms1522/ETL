@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import subprocess
 import sys
 from utils.env_setup import setup_environment, load_environment
+from connectors import *
 
 # Initialize typer app and rich console
 app = typer.Typer(help="MongoDB to SQL Migration Tool")
@@ -14,6 +15,9 @@ console = Console()
 
 # Load environment variables
 load_dotenv()
+
+
+
 
 @app.command()
 def setup(
@@ -82,9 +86,46 @@ def migrate(
             console.print(f"Starting migration from {collection} to {table}")
             console.print(f"MongoDB URI: {mongodb_uri}")
             console.print(f"SQL URI: {sql_uri}")
+
+            mongo_connector = MongoDBConnector(mongodb_uri)
+            sql_connector = SQLConnector(sql_uri)
+            mongo_connector.connect()
+            sql_connector.connect() 
+
+            # Get collection schema
+            collection_schema = mongo_connector.get_collection_schema(collection)
+
+            # Create table with schema
+            # if no table, create one
+            if not sql_connector.table_exists(table):
+                sql_connector.create_table(table, collection_schema)
+
+            # check if table is compatible with collection schema
+            if not sql_connector.is_table_compatible(table, collection_schema):
+                console.print("[red]Table is not compatible with collection schema")
+                raise typer.Exit(1)
+
+            # get count of documents in collection
+            collection_count = mongo_connector.get_document_count(collection)
+            # give information about the no of batches and the size of each batch
+            console.print(f"[cyan]Collection has {collection_count} documents")
+            console.print(f"[cyan]Batch size is {batch_size}")
+            console.print(f"[cyan]No of batches is {collection_count // batch_size}")   
+
+            # run migration on batches if batch_size is set
+            if batch_size > 0:
+                for i, batch in enumerate(mongo_connector.iterator(collection, limit=batch_size, sort=[("_id", -1)])):
+                    progress.update(task, completed=i * 100 / (collection_count // batch_size))
+                    sql_connector.insert_data(table, batch)
+            else:
+                # run migration on all documents
+                for i, document in enumerate(mongo_connector.iterator(collection)):
+                    # how can i show progress for each document
+                    progress.update(task, completed=i * 100 / collection_count) 
+                    sql_connector.insert_data(table, document)
             
             if dry_run:
-                console.print("[yellow]DRY RUN: No data will be migrated")
+                return console.print("[yellow]DRY RUN: No data will be migrated")
             
             # Placeholder for actual migration logic
             progress.update(task, completed=True)

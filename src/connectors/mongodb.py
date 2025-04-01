@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Iterator, Tuple           
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import logging
@@ -89,6 +89,16 @@ class MongoDBConnector:
         """Get sample documents from collection."""
         collection = self.get_collection(collection_name)
         return list(collection.find().limit(limit))
+
+    def get_data(self, collection_name: str, query: Dict[str, Any] = {}, limit: int = 1000, sort: List[Tuple[str, int]] = []) -> List[Dict[str, Any]]:
+        """Get data from collection."""
+        collection = self.get_collection(collection_name)
+        return list(collection.find(query).limit(limit).sort(sort))
+
+    def iterator(self, collection_name: str, query: Dict[str, Any] = {}, limit: int = 1000, sort: List[Tuple[str, int]] = []) -> Iterator[Dict[str, Any]]:
+        """Iterator over data from collection."""
+        collection = self.get_collection(collection_name)
+        return collection.find(query).limit(limit).sort(sort)
 
     def __enter__(self):
         """Context manager entry."""
