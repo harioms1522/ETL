@@ -3,11 +3,12 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import logging
 from rich.console import Console
+from src.connectors.connector import Connector
 
 console = Console()
 logger = logging.getLogger(__name__)
 
-class MongoDBConnector:
+class MongoDBConnector(Connector):
     def __init__(self, uri: str):
         """Initialize MongoDB connection."""
         self.uri = uri
