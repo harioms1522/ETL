@@ -115,7 +115,7 @@ def migrate(
             # run migration on batches if batch_size is set
             if batch_size > 0:
                 for i, batch in enumerate(mongo_connector.iterator(collection, limit=batch_size, sort=[("_id", -1)])):
-                    progress.update(task, completed=i * 100 / (collection_count // batch_size))
+                    progress.update(task, completed=i * 100 / ((collection_count // batch_size) + 1))
                     sql_connector.insert_data(table, batch)
             else:
                 # run migration on all documents

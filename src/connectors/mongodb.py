@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import logging
 from rich.console import Console
-from src.connectors.connector import Connector
+from .connector import Connector
 
 console = Console()
 logger = logging.getLogger(__name__)

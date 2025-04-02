@@ -157,6 +157,7 @@ class SQLConnector:
             with self.engine.connect() as conn:
                 conn.execute(text(f"INSERT INTO {table_name} ({', '.join(data[0].keys())}) VALUES ({', '.join([f':{key}' for key in data[0].keys()])})"))
                 conn.commit()
+                print(f"Inserted {len(data)} rows into {table_name}")
             return True
         except SQLAlchemyError as e:
             console.print(f"[red]Failed to insert data: {str(e)}")
